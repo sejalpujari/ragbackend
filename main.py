@@ -1,44 +1,56 @@
 # api.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from rag_pipeline import run_rag_debug
 from llm import generate_answer
 import uvicorn
-from fastapi import Request, Response
-app = FastAPI(title="Explainable RAG API")
 
-@app.options("/{path:path}")
-async def options_handler(request: Request, path: str):
+
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+app = FastAPI(title="Explainable RAG API")
+@app.options("/{full_path:path}")
+async def catch_all_options(full_path: str, request: Request):
     origin = request.headers.get("origin")
-    allowed_origins = [
-        "https://frontendrag.vercel.app",
+    if origin in [
         "http://localhost:3000",
+        "http://localhost:5173",
         "http://127.0.0.1:3000",
-    ]
+        "https://frontendrag.vercel.app",
+    ] or "*" in allow_origins:  # wildcard support
+        headers = {
+            "Access-Control-Allow-Origin": origin or "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
+            "Access-Control-Allow-Headers": "Content-Type, Accept, Origin, Authorization",
+            "Access-Control-Max-Age": "86400",
+            "Access-Control-Allow-Credentials": "true",
+        }
+        return JSONResponse(content="OK", headers=headers, status_code=200)
     
-    if origin in allowed_origins:
-        return Response(
-            status_code=204,
-            headers={
-                "Access-Control-Allow-Origin": origin,
-                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
-                "Access-Control-Allow-Credentials": "true",
-                "Access-Control-Max-Age": "600",
-            }
-        )
-    else:
-        return Response(status_code=400)
+    # If origin not allowed
+    return JSONResponse(content="Origin not allowed", status_code=403)
+# CORS middleware – put it FIRST
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",           # Vite / Next.js dev
+        "http://127.0.0.1:3000",
+        "https://frontendrag.vercel.app",
+        "*"                                # ← temporary wildcard – remove later
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],                                            
+    allow_methods=["GET", "POST", "OPTIONS", "HEAD"],
+    allow_headers=["Content-Type", "Accept", "Origin", "Authorization"],
+    expose_headers=[],
+    max_age=86400,                         # Cache preflight 24h
 )
 
-
+# Explicit OPTIONS handler for EVERY path – this fixes most stubborn cases
 
 class RAGRequest(BaseModel):
     query: str
