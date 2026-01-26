@@ -1,4 +1,3 @@
-# api.py
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -6,63 +5,44 @@ from pydantic import BaseModel
 from rag_pipeline import run_rag_debug
 from llm import generate_answer
 import uvicorn
+import os
 
 app = FastAPI(title="Explainable RAG API")
+
+# This is the key fix – wildcard + credentials=False
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://frontendrag.vercel.app",      # ← must match EXACTLY your frontend URL
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        # NO "*" here
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],                       # this is allowed
-    allow_headers=["*"],                       # this is allowed
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
     expose_headers=[],
     max_age=86400,
 )
-# Explicit OPTIONS handler for EVERY path – this fixes most stubborn cases
-@app.options("/{full_path:path}")
-async def catch_all_options(full_path: str, request: Request):
-    origin = request.headers.get("origin")
-    if origin in [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-        "https://frontendrag.vercel.app",
-    ] or "*" in allow_origins:  # wildcard support
-        headers = {
-            "Access-Control-Allow-Origin": origin or "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
-            "Access-Control-Allow-Headers": "Content-Type, Accept, Origin, Authorization",
-            "Access-Control-Max-Age": "86400",
-            "Access-Control-Allow-Credentials": "true",
-        }
-        return JSONResponse(content="OK", headers=headers, status_code=200)
-    
-    # If origin not allowed
-    return JSONResponse(content="Origin not allowed", status_code=403)
+
+# NO @app.options handler here!
+
 class RAGRequest(BaseModel):
     query: str
     chunk_size: int = 120
     chunk_overlap: int = 30
     top_k: int = 5
-    generate: bool = False           # whether to call LLM
+    generate: bool = False
 
 class RAGDebugResponse(BaseModel):
     documents: dict
     chunks: list
-    chunk_embeddings_preview: list       # only first 10 dims
+    chunk_embeddings_preview: list
     query_embedding_preview: list
     similarity_data: list
     top_k_chunks: list
     final_context: str | None = None
     answer: str | None = None
+
 @app.get("/test")
 def test():
     return {"status": "Backend is working!"}
+
 @app.post("/rag/debug", response_model=RAGDebugResponse)
 async def rag_debug(req: RAGRequest):
     try:
@@ -72,18 +52,12 @@ async def rag_debug(req: RAGRequest):
             chunk_overlap=req.chunk_overlap,
         )
 
-        # Prepare preview data (avoid sending huge arrays)
         chunk_emb_preview = [emb[:10].tolist() for emb in data["chunk_embeddings"]]
         query_emb_preview = data["query_embedding"][:10].tolist()
 
         top_k_items = data["similarity_data"][:req.top_k]
         top_k_chunks = [
-            {
-                "file": item["file"],
-                "chunk_id": item["chunk_id"],
-                "text": item["text"],
-                "score": round(item["score"], 4)
-            }
+            {"file": item["file"], "chunk_id": item["chunk_id"], "text": item["text"], "score": round(item["score"], 4)}
             for item in top_k_items
         ]
 
@@ -100,20 +74,16 @@ async def rag_debug(req: RAGRequest):
             "chunk_embeddings_preview": chunk_emb_preview,
             "query_embedding_preview": query_emb_preview,
             "similarity_data": [
-                {
-                    "file": s["file"],
-                    "chunk_id": s["chunk_id"],
-                    "text": s["text"],
-                    "score": round(s["score"], 4)
-                } for s in data["similarity_data"]
+                {"file": s["file"], "chunk_id": s["chunk_id"], "text": s["text"], "score": round(s["score"], 4)}
+                for s in data["similarity_data"]
             ],
             "top_k_chunks": top_k_chunks,
             "final_context": final_context,
             "answer": answer,
         }
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
