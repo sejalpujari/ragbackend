@@ -12,8 +12,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],  # explicitly list instead of "*"
+    allow_headers=["Content-Type", "Authorization"],  # be specific if possible; or keep ["*"]
+    expose_headers=[],  # optional
+    max_age=600,
 )
 
 class RAGRequest(BaseModel):
