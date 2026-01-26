@@ -11,19 +11,18 @@ app = FastAPI(title="Explainable RAG API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://frontendrag.vercel.app",      # ← must match EXACTLY your frontend URL
         "http://localhost:3000",
-        "http://localhost:5173",           # Vite / Next.js dev
+        "http://localhost:5173",
         "http://127.0.0.1:3000",
-        "https://frontendrag.vercel.app",
-        "*"                                # ← temporary wildcard – remove later
+        # NO "*" here
     ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS", "HEAD"],
-    allow_headers=["Content-Type", "Accept", "Origin", "Authorization"],
+    allow_methods=["*"],                       # this is allowed
+    allow_headers=["*"],                       # this is allowed
     expose_headers=[],
-    max_age=86400,                         # Cache preflight 24h
+    max_age=86400,
 )
-
 # Explicit OPTIONS handler for EVERY path – this fixes most stubborn cases
 @app.options("/{full_path:path}")
 async def catch_all_options(full_path: str, request: Request):
