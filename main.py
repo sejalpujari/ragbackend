@@ -5,17 +5,8 @@ from pydantic import BaseModel
 from rag_pipeline import run_rag_debug
 from llm import generate_answer
 import uvicorn
-
-app = FastAPI(title="Explainable RAG API")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],                                            
-)
 from fastapi import Request, Response
+app = FastAPI(title="Explainable RAG API")
 
 @app.options("/{path:path}")
 async def options_handler(request: Request, path: str):
@@ -39,6 +30,16 @@ async def options_handler(request: Request, path: str):
         )
     else:
         return Response(status_code=400)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],                                            
+)
+
+
+
 class RAGRequest(BaseModel):
     query: str
     chunk_size: int = 120
