@@ -15,7 +15,30 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],                                            
 )
+from fastapi import Request, Response
 
+@app.options("/{path:path}")
+async def options_handler(request: Request, path: str):
+    origin = request.headers.get("origin")
+    allowed_origins = [
+        "https://frontendrag.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+    
+    if origin in allowed_origins:
+        return Response(
+            status_code=204,
+            headers={
+                "Access-Control-Allow-Origin": origin,
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "600",
+            }
+        )
+    else:
+        return Response(status_code=400)
 class RAGRequest(BaseModel):
     query: str
     chunk_size: int = 120
