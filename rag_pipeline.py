@@ -29,8 +29,10 @@ def run_rag_debug(query: str,chunk_size: int,chunk_overlap: int):
             })
 
     # Embeddings
+    # chunk_embeddings = create_embeddings(all_chunks)
+    # query_embedding = model.encode(query)
+    query_embedding = create_embeddings([query])[0]          # returns 1×dim array → take [0]
     chunk_embeddings = create_embeddings(all_chunks)
-    query_embedding = model.encode(query)
 
     # Similarity calculation
     similarity_data = []
