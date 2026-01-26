@@ -1,6 +1,7 @@
 # api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from rag_pipeline import run_rag_debug
 from llm import generate_answer
@@ -15,7 +16,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+# 2. Explicitly handle OPTIONS requests (this fixes most stubborn cases on Render/Fly/etc.)
+@app.options("/{path:path}")
+async def options(path: str, request: Request):
+    return JSONResponse(
+        content="OK",
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400",
+        }
+    )
 class RAGRequest(BaseModel):
     query: str
     chunk_size: int = 120
