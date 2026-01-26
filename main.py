@@ -1,31 +1,20 @@
 # api.py
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from rag_pipeline import run_rag_debug
 from llm import generate_answer
 import uvicorn
 
-
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-
 app = FastAPI(title="Explainable RAG API")
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],                  # Safe for public API; use specific origins in production
-    allow_credentials=True,               # Must be True if you need cookies/auth headers
-    allow_methods=["*"],                  # Or explicitly: ["GET", "POST", "OPTIONS"]
-    allow_headers=["*"],                  # Or explicitly: ["Content-Type", "Authorization"]
-                      # Cache preflight responses for 24 hours (reduces OPTIONS calls)
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-# Explicit OPTIONS handler for EVERY path –
-#  this fixes most stubborn cases
 
 class RAGRequest(BaseModel):
     query: str
