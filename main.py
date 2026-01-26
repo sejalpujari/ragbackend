@@ -11,25 +11,10 @@ app = FastAPI(title="Explainable RAG API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],  # explicitly list instead of "*"
-    allow_headers=["Content-Type", "Authorization"],  # be specific if possible; or keep ["*"]
-    expose_headers=[],  # optional
-    max_age=600,
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],                                            
 )
-from fastapi import Request, Response
-
-@app.options("/{path:path}")
-async def options_catch_all(request: Request, path: str):
-    # This catches ALL OPTIONS requests and returns proper CORS headers
-    headers = {
-        "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        "Access-Control-Max-Age": "600",
-        "Access-Control-Allow-Credentials": "true",
-    }
-    return Response(status_code=204, headers=headers)
 
 class RAGRequest(BaseModel):
     query: str
