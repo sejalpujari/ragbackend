@@ -8,26 +8,43 @@ from llm import generate_answer
 import uvicorn
 
 app = FastAPI(title="Explainable RAG API")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://frontendrag.vercel.app"],  # update later
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:5173",           # Vite / Next.js dev
+        "http://127.0.0.1:3000",
+        "https://frontendrag.vercel.app",
+        "*"                                # ← temporary wildcard – remove later
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "HEAD"],
+    allow_headers=["Content-Type", "Accept", "Origin", "Authorization"],
+    expose_headers=[],
+    max_age=86400,                         # Cache preflight 24h
 )
-# 2. Explicitly handle OPTIONS requests (this fixes most stubborn cases on Render/Fly/etc.)
-@app.options("/{path:path}")
-async def options(path: str, request: Request):
-    return JSONResponse(
-        content="OK",
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+
+# Explicit OPTIONS handler for EVERY path – this fixes most stubborn cases
+@app.options("/{full_path:path}")
+async def catch_all_options(full_path: str, request: Request):
+    origin = request.headers.get("origin")
+    if origin in [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "https://frontendrag.vercel.app",
+    ] or "*" in allow_origins:  # wildcard support
+        headers = {
+            "Access-Control-Allow-Origin": origin or "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
+            "Access-Control-Allow-Headers": "Content-Type, Accept, Origin, Authorization",
             "Access-Control-Max-Age": "86400",
+            "Access-Control-Allow-Credentials": "true",
         }
-    )
+        return JSONResponse(content="OK", headers=headers, status_code=200)
+    
+    # If origin not allowed
+    return JSONResponse(content="Origin not allowed", status_code=403)
 class RAGRequest(BaseModel):
     query: str
     chunk_size: int = 120
