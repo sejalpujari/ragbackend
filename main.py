@@ -17,6 +17,19 @@ app.add_middleware(
     expose_headers=[],  # optional
     max_age=600,
 )
+from fastapi import Request, Response
+
+@app.options("/{path:path}")
+async def options_catch_all(request: Request, path: str):
+    # This catches ALL OPTIONS requests and returns proper CORS headers
+    headers = {
+        "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "600",
+        "Access-Control-Allow-Credentials": "true",
+    }
+    return Response(status_code=204, headers=headers)
 
 class RAGRequest(BaseModel):
     query: str
