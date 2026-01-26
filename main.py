@@ -11,7 +11,7 @@ app = FastAPI(title="Explainable RAG API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000","https://frontendrag.vercel.app"],  # update later
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],                                            
 )
