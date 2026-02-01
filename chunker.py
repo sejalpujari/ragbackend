@@ -10,7 +10,7 @@ def chunk_text(text, chunk_size=100, overlap=20):
     if overlap >= chunk_size:
         overlap = chunk_size - 1
 
-    words = text.split()   # split by whitespace
+    words = text.split()   
     chunks = []
     start = 0
 
