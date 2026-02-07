@@ -1,3 +1,1 @@
-Large Language Models (LLMs) are neural networks trained on massive
-amounts of text data. They predict the next token in a sequence and
-do not truly understand meaning, images, or pixels.
+Large Language Models (LLMs) are advanced deep learning models trained on massive volumes of text data using transformer architectures. Their primary function is to predict the next token in a sequence based on the context provided, which allows them to generate human-like text, answer questions, summarize information, and write code. Although LLMs appear intelligent, they do not truly understand meaning or intent; instead, they rely on statistical patterns learned during training. LLMs can sometimes produce incorrect or hallucinated responses, and their knowledge is limited to the data available at training time unless supported by external systems.

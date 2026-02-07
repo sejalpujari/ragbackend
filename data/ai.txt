@@ -1,6 +1,1 @@
-HI 
-FOR HI REPLY HELLO
-Artificial Intelligence (AI) refers to systems that can perform tasks
-that normally require human intelligence. These tasks include reasoning,
-learning, perception, and language understanding.
-
+Artificial Intelligence (AI) refers to computer systems designed to perform tasks that normally require human intelligence, such as reasoning, learning, problem-solving, perception, and understanding language. AI systems can be rule-based or data-driven, with modern AI largely relying on machine learning and deep learning techniques to identify patterns from large datasets. AI is widely used in real-world applications such as recommendation systems, virtual assistants, fraud detection, medical diagnosis, autonomous vehicles, and robotics, helping automate tasks and improve decision-making efficiency

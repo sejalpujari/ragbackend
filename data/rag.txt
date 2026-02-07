@@ -1,3 +1,1 @@
-Retrieval Augmented Generation (RAG) improves LLM responses by retrieving
-relevant documents from external knowledge sources and injecting them
-into the prompt.
+Retrieval Augmented Generation (RAG) is a technique that improves the accuracy and reliability of LLM responses by retrieving relevant information from external knowledge sources and injecting it into the prompt before generating an answer. Instead of relying solely on the model’s internal knowledge, RAG uses embeddings and vector databases to fetch up-to-date or domain-specific documents, which helps reduce hallucinations and increases factual correctness. RAG is commonly used in applications such as document-based chatbots, enterprise knowledge assistants, customer support systems, and search tools where accurate and current information is critical.
